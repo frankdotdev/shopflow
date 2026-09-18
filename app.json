@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "ShopFlow",
+    "slug": "shopflow",
+    "version": "1.0.0",
+    "orientation": "default",
+    "scheme": "shopflow",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "backgroundColor": "#FFFFFF"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "android": {
+      "package": "com.frankoge.shopflow",
+      "adaptiveIcon": {
+        "backgroundColor": "#FFFFFF"
+      }
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": false
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "fdb052c9-f792-41fd-9088-011fa912e980"
+      }
+    }
+  }
+}

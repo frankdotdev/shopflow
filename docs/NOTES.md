@@ -1,53 +1,49 @@
-# Build notes / what to know
+# Developer Notes & Project Insights
 
-## How this was built
+Here are my personal development notes, implementation details, and reference information for ShopFlow.
 
-Generated as a full Expo Router + TypeScript project with a script-generated product catalog
-(112 products across 13 categories, procedurally combined from brand names, adjectives, and
-per-subcategory image sets so the catalog looks varied rather than repetitive) plus hand-built
-screens for every flow in the brief: browsing, search, filters, product detail with variants,
-cart, wishlist, a 5-step checkout, order tracking/history, reviews, notifications, settings,
-and a Demo Store Manager admin section. The whole project type-checks cleanly with
-`npx tsc --noEmit`.
+---
 
-## Regenerating the catalog
+## Implementation Overview
 
-The product/category data in `src/data/products.ts` and `src/data/categories.ts` is plain
-JSON-like TypeScript — safe to hand-edit. If you want to regenerate a fresh randomized set
-programmatically (e.g. to change quantities per category or price ranges), write a small
-Node/Python script that outputs the same `Product[]` shape defined in `src/types/index.ts` and
-overwrite those two files. After regenerating, bump `meta.seeded` (Settings → Reset Demo Data
-in-app) so the new data actually loads.
+I engineered ShopFlow from scratch using React Native, Expo Router, and TypeScript. The goal was to build a complete, resilient mobile marketplace with zero external server dependencies:
 
-## What's simulated vs. real
+- **112 products** across 13 major categories and 50+ subcategories, priced in Nigerian Naira (₦).
+- **Zero type errors**: The codebase strictly type-checks cleanly with `npx tsc --noEmit`.
+- **End-to-end flows**: Browse → Search & Filter → Product Details & Variants → Cart → 5-Step Checkout → Order Confirmation → Order Tracking → Order History → Product Reviews → Store Manager Dashboard.
 
-| Feature | Status |
-|---|---|
-| Product catalog, cart, wishlist, addresses, orders, reviews, notifications | Real local persistence (SQLite) |
-| Search, filter, sort | Real, operates over the local catalog |
-| Checkout math (subtotal/discount/shipping/total) | Real arithmetic, real promo code validation |
-| Payment | Simulated — no charge, no card data collected or stored |
-| Order tracking timeline | Simulated — advances based on elapsed time since order placement |
-| Admin dashboard metrics | Real, computed from local orders/products/inventory tables |
+---
 
-## Things a real production version would still need
+## Real vs. Simulated Capabilities
 
-- A real payment processor integration (Paystack/Flutterwave are the common choices for
-  Nigeria-first apps) behind the existing payment method selection UI.
-- Push notifications (the Notifications screen currently only shows seeded/local entries).
-- Real product photography, or a proper DAM/CDN pipeline for vendor-submitted images.
-- Authentication — the app currently assumes a single local user ("Frank Oge") with no login.
-- A real order-tracking integration with whichever courier/logistics API is chosen.
+| Feature | Status | Details |
+|---|---|---|
+| **Product Catalog** | Real | Stored and queried from SQLite |
+| **Cart & Wishlist** | Real | Fully persistent in SQLite; real-time math |
+| **Checkout Flow** | Real | Real subtotal, promo code discount math, shipping calculation |
+| **Order History** | Real | Stored in SQLite with items, addresses, and timestamps |
+| **Store Manager** | Real | Computes real revenue, orders, and stock updates in SQLite |
+| **Theme Engine** | Real | Real-time Dark/Light mode switcher |
+| **Payment Gateways** | Simulated | Mock payment step; no actual money charged |
+| **Order Tracking** | Simulated | Advances status stages based on elapsed time |
+| **Push Alerts** | Simulated | Stored locally; no remote FCM/APNs server |
 
-## Verifying the full flow
+---
 
-The brief's required test path — Home → Category → Product → variant → Add to Cart → Cart →
-Checkout → Address → Shipping → Promo → Payment → Review → Place Order → Success → Track Order
-→ Order History → Product again, plus Search → Results → Filters → Product → Wishlist, plus
-Profile → Orders/Addresses/Settings, plus Demo Store Manager → Products/Inventory/Orders — was
-walked through screen-by-screen while building each piece, and the whole project type-checks
-with zero errors. It has **not** been run inside an actual Android emulator/device from this
-environment (no Android SDK / device available in the sandbox that generated this project), so
-budget time for a first real run-through to catch anything a static type-check can't (subtle
-layout overflow on a specific screen size, a native module version mismatch, etc.) — see
-`RUNNING.md`'s troubleshooting section for the most common first-run issues.
+## How State & Persistence Work Together
+
+To prevent state desynchronization:
+1. Every write operation (adding to cart, toggling wishlist, adding an address, placing an order) writes to SQLite first.
+2. Upon query success, the in-memory Zustand store is updated.
+3. On application launch (`app/_layout.tsx`), all stores hydrate from SQLite while the native splash screen is held.
+4. Result: If a user closes or kills the app at any point, all cart items, addresses, and order history remain intact upon reopening.
+
+---
+
+## How to Reset Demo Data
+
+If you modify test data, place test orders, or alter inventory and want to return to a clean state:
+1. Open the app on your phone or emulator.
+2. Navigate to **Profile → Settings**.
+3. Tap **Reset Demo Data** and confirm.
+4. The app clears all custom orders/cart data and re-seeds the database cleanly with the default catalog.

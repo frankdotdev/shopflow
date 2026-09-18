@@ -1,54 +1,47 @@
-# Known Limitations & What to Change for Production
+# Known Limitations & Production Roadmap
 
-This app was built as a portfolio-grade **demo/MVP**, not a store you'd point real customers
-and real payments at. Here's what's intentionally simplified, and what to do about each before
-any real-world use:
+I built ShopFlow as a standalone MVP and portfolio demonstration. To ensure it runs completely self-contained on any device without requiring servers or external API keys, certain features are simulated.
 
-## Payments
-All payment methods (Card, PayPal, Google Pay, Apple Pay, Bank Transfer, Cash on Delivery) are
-**simulated** — no real charge is ever made, and no real payment credentials are requested or
-stored anywhere, per the original brief. To go live, integrate a real gateway appropriate for
-Nigeria (Paystack, Flutterwave, etc.) at the `checkout/payment.tsx` → `checkout/index.tsx`
-hand-off point, where the order is currently created directly in SQLite.
+If you are planning to take this app into full commercial production, here is an honest breakdown of what is simulated and the exact steps to transition to production.
 
-## Images
-See `DATA_AND_IMAGES.md` — current images are remote Unsplash URLs chosen by category, not
-verified one-by-one, and not bundled for offline-from-first-launch use.
+---
 
-## Authentication
-There's a single hardcoded demo user ("Frank Oge") seeded into the `users` table. There's no
-sign-up/login flow, since the brief explicitly asked for no auth servers. If you need multiple
-accounts, you'll need to add a real auth layer (Firebase Auth, Supabase Auth, or a custom
-backend) — at which point cart/orders/etc. should likely move server-side too.
+## 1. Payment Processing
+- **Current Behavior**: All payment methods (Card, Bank Transfer, PayPal, Apple Pay, Google Pay, Cash on Delivery) are fully simulated. No real charges are made and no sensitive financial data is collected or stored.
+- **Production Roadmap**: Integrate a payment gateway suitable for your target market. For Nigeria, integrate **Paystack** or **Flutterwave** (e.g. `react-native-paystack-webview`). Hook this into `app/checkout/payment.tsx` right before the order record is committed to the database.
 
-## Single-device data
-Because everything lives in local SQLite, cart/orders/wishlist do not sync across devices or
-survive an app uninstall. This is by design for the demo but is the first thing to change if
-this becomes a real product (move to a backend + real database).
+---
 
-## Admin section security
-"Demo Store Manager" is reachable from Profile → Business → Demo Store Manager with no
-authentication gate, since it operates on the same local data as the shopper-facing app and
-exists purely to demonstrate business-software capability. In production this must be a
-properly authenticated, separate surface with real role-based access control.
+## 2. Authentication & Multi-User Support
+- **Current Behavior**: The app uses a single default user profile ("Frank Oge") seeded directly into the local database, allowing instant access to addresses, orders, and settings without a login barrier.
+- **Production Roadmap**: Add an authentication layer using Supabase Auth, Firebase Auth, or a custom OAuth/JWT backend. Create Sign In / Sign Up screens and guard the user-specific routes (orders, addresses, checkout).
 
-## Currency
-Only NGN is actually functional (all prices are generated in Naira). The currency toggle in
-Settings is a visual placeholder (per the brief) and does not convert prices.
+---
 
-## Language
-Same as currency — the language toggle in Settings is a visual placeholder; no i18n strings
-exist yet.
+## 3. Cloud Synchronization
+- **Current Behavior**: All data (cart, wishlist, saved addresses, orders, reviews) is stored locally in the device's SQLite database (`shopflow.db`). If the app is uninstalled or installed on a second device, the data does not sync.
+- **Production Roadmap**: Connect the Zustand store actions to a remote REST or GraphQL API so that carts, orders, and user profiles persist on a central cloud database (PostgreSQL, MySQL, etc.).
 
-## Search
-Search is a simple case-insensitive substring match across name/category/subcategory/brand/tags
-run in-memory on the already-loaded product list. This is fine for ~100–1,000 products; a real
-catalog at scale would want a proper search index (SQLite FTS5, or a hosted search service).
+---
 
-## Notifications
-Notifications are seeded demo content and are not pushed by any real event system — no push
-notification integration (APNs/FCM) is wired up.
+## 4. Store Manager (Admin Access Control)
+- **Current Behavior**: The "Demo Store Manager" dashboard is accessible directly from **Profile → Business → Demo Store Manager** so reviewers can easily inspect inventory and order management capabilities.
+- **Production Roadmap**: Separate the admin functionality into an authenticated, role-based admin portal (or gate it behind admin authentication with strict JWT/role verification).
 
-## Tests
-There is no automated test suite. The manual QA flow in `TESTING_CHECKLIST.md` covers the
-critical paths that were used to validate this build.
+---
+
+## 5. Live Order Tracking
+- **Current Behavior**: The order timeline is simulated dynamically based on elapsed time since the order was placed (advancing stages every few hours).
+- **Production Roadmap**: Connect the tracking screen (`app/orders/[id].tsx`) to real-time webhook updates from a courier or logistics partner (e.g. GIG Logistics, DHL, FedEx, Terminal Africa).
+
+---
+
+## 6. Push Notifications
+- **Current Behavior**: The Notifications screen displays seeded order and promotional alerts.
+- **Production Roadmap**: Configure `expo-notifications` with Firebase Cloud Messaging (FCM) and Apple Push Notification service (APNs) to send push notifications when orders update or promos launch.
+
+---
+
+## 7. Search Indexing
+- **Current Behavior**: Search executes a fast in-memory case-insensitive filter across titles, categories, subcategories, brands, and tags. This is extremely fast for ~100–1,000 items.
+- **Production Roadmap**: For catalogs with tens of thousands of items, implement SQLite FTS5 (Full-Text Search) tables locally, or integrate an external search index like Algolia, Meilisearch, or Elasticsearch.

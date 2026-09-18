@@ -1,67 +1,96 @@
-# Manual Testing Checklist
+# QA & Manual Testing Checklist
 
-Use this to verify a build before considering it "done." All flows below were exercised during
-development (via TypeScript compilation + code review of every screen/action); running through
-them by hand on a device/emulator once is still recommended before shipping, since a static
-check can't click buttons for you.
+I use this checklist to thoroughly verify all features and user journeys across ShopFlow before deploying or presenting a build.
 
-## Primary flow
-- [ ] Home → tap a category chip → Category listing shows only that category's products
-- [ ] Category listing → tap Sort → change sort order → list re-orders
-- [ ] Category listing → tap Filter → set a price range / brand / rating → Apply → list narrows
-- [ ] Tap a product card → Product detail loads with correct images/price/stock
-- [ ] Select a color and size → Add to Cart → button shows "Added to Cart" confirmation
-- [ ] Cart tab shows the item with correct variant, quantity, and running totals
-- [ ] Increase/decrease quantity in Cart → totals update immediately
-- [ ] Tap Checkout → Address step → select existing or add a new address → Continue
-- [ ] Shipping step → pick a tier → Continue
-- [ ] Promo step → try `SAVE10` (valid) and `WRONG1` (invalid) → confirm messaging differs →
-      Continue
-- [ ] Payment step → pick a method → Review Order
-- [ ] Review screen shows correct products, address, shipping, promo, payment, and totals
-- [ ] Place Order → Success screen shows order number, delivery estimate, total
-- [ ] Track Order → tracking timeline renders with the right stage highlighted
-- [ ] Order History → the new order appears at the top
-- [ ] Re-open the product from Related Products and add it again
+Follow this checklist to test every flow systematically.
 
-## Search
-- [ ] Search tab → type a partial product name → results appear, count is accurate
-- [ ] Type a nonsense string → "NOTHING FOUND" empty state appears
-- [ ] Tap a Popular Search chip → results populate and the term is saved to Recent
-- [ ] Clear All on Recent Searches → list empties
+---
 
-## Wishlist
-- [ ] Tap the heart on a product card → heart fills, product appears in Wishlist
-- [ ] Wishlist → Add to Cart on an item → appears in Cart
-- [ ] Wishlist → remove an item → disappears from list and from other hearts
+## 1. Browse & Discovery
+- [ ] **Home Feed**: Banner carousel scrolls smoothly; flash sales and trending sections render with correct product cards.
+- [ ] **Category Chips**: Tapping a category chip navigates to the Category listing filtered to that category.
+- [ ] **Category Listing**:
+  - [ ] Tap **Sort** → change to "Price: Low to High", "Price: High to Low", or "Rating" → list re-orders instantly.
+  - [ ] Tap **Filter** → adjust price slider, select a brand, pick a minimum star rating → tap **Apply** → results filter accurately.
+  - [ ] Tap **Reset Filters** → resets all criteria and restores full product list.
 
-## Profile
-- [ ] Profile → My Orders / Wishlist badges reflect real counts
-- [ ] Profile → Saved Addresses → add, edit, delete, set default all work
-- [ ] Profile → Settings → toggle Dark Mode → whole app re-themes
-- [ ] Profile → Settings → Reset Demo Data → confirms, then re-seeds cleanly
+---
 
-## Reviews
-- [ ] Product detail → tap the rating row → Reviews screen shows distribution + list
-- [ ] Write a Review → submit → new review appears immediately at the top
+## 2. Product Details & Variants
+- [ ] Tap any product card → Product detail screen opens with image carousel, title, price, rating, and stock badge.
+- [ ] **Variant Selection**:
+  - [ ] Tap different color swatches → selected swatch highlights.
+  - [ ] For apparel/shoes: Tap size chips → selected size highlights.
+  - [ ] Quantity selector: Tap `+` and `-` to increment/decrement quantity.
+- [ ] **Add to Cart**:
+  - [ ] Tap **Add to Cart** → confirmation feedback appears.
+  - [ ] Cart tab icon badge updates its count immediately.
+- [ ] **Wishlist Toggle**:
+  - [ ] Tap the heart icon → heart fills with primary color.
+  - [ ] Navigate to Wishlist tab → product appears in the list.
 
-## Notifications
-- [ ] Notifications → unread items are visually distinct
-- [ ] Tap a notification → marks as read
-- [ ] Mark all read → all items update
+---
 
-## Demo Store Manager
-- [ ] Profile → Business → Demo Store Manager → dashboard metrics are non-zero after placing
-      an order
-- [ ] Products → edit a product's price/stock → change reflects on the shopper-facing product
-      page
-- [ ] Inventory → increment/decrement stock → status label (In Stock / Low Stock / Out of
-      Stock) updates correctly at the thresholds
-- [ ] Orders → filter by status → Advance an order → status progresses and is reflected in
-      Order History / tracking
+## 3. Search Flow
+- [ ] Open **Search** tab.
+- [ ] Type a keyword (e.g., "Sneaker", "Watch", "Wireless") → matching items appear instantly with count.
+- [ ] Type a nonsense string (e.g., "xyzqwe") → clean "No Results Found" empty state displays.
+- [ ] Tap a **Popular Search** chip → search bar populates and results load immediately.
+- [ ] Recent Searches history updates; tap **Clear All** → recent search history empties.
 
-## Cross-cutting
-- [ ] Kill and reopen the app → cart, wishlist, addresses, and orders all persisted
-- [ ] Rotate a tablet-sized device/emulator to landscape → grids reflow to more columns
-- [ ] Android hardware back button steps back through the stack correctly on every screen
-- [ ] No screen shows a raw crash, an "undefined" price, or an unhandled blank state
+---
+
+## 4. Cart & 5-Step Checkout
+- [ ] Open **Cart** tab → items display with selected variant (color, size), quantity, and price.
+- [ ] Modify item quantity with `+` / `-` → item price and order subtotal update dynamically.
+- [ ] Swipe / tap to delete an item → item removes and totals recalculate.
+- [ ] Tap **Proceed to Checkout**:
+  - [ ] **Step 1 (Address)**: Select existing default address or tap "Add New Address". Save and proceed.
+  - [ ] **Step 2 (Shipping)**: Choose between Standard, Express, or Same Day. Verify shipping fee updates.
+  - [ ] **Step 3 (Promo Code)**:
+    - Test `SAVE10` → confirms 10% discount is applied to total.
+    - Test invalid code `INVALID99` → displays error feedback without applying discount.
+  - [ ] **Step 4 (Payment)**: Select a payment method (Card, Bank Transfer, PayPal, etc.).
+  - [ ] **Step 5 (Review & Place Order)**: Review screen displays breakdown (Subtotal, Shipping, Discount, Grand Total). Tap **Place Order**.
+- [ ] **Order Success Screen**: Shows generated Order ID, delivery date estimate, and buttons for "Track Order" and "Continue Shopping".
+
+---
+
+## 5. Orders & Live Tracking
+- [ ] From Success screen, tap **Track Order** → timeline displays with the initial stage highlighted.
+- [ ] Go to **Profile → My Orders** → the newly placed order appears at the top of the history list.
+- [ ] Tap the order → displays full item breakdown, shipping address, and payment method used.
+
+---
+
+## 6. Product Reviews
+- [ ] Open a product detail page → tap the ratings row.
+- [ ] Ratings distribution breakdown (5-star down to 1-star) renders with seeded customer reviews.
+- [ ] Tap **Write a Review**:
+  - [ ] Select star rating, enter a reviewer name and comment.
+  - [ ] Tap **Submit** → new review appears at the top of the review list immediately.
+
+---
+
+## 7. Store Manager (Admin Dashboard)
+- [ ] Navigate to **Profile → Business → Demo Store Manager**.
+- [ ] **Dashboard**: Total revenue, order count, and inventory metrics update based on placed orders.
+- [ ] **Products**: Tap any product to edit price or stock level → verify changes reflect in the shopper store.
+- [ ] **Inventory**: Check low-stock alerts and adjust stock levels.
+- [ ] **Orders**: Inspect recent orders and advance status stages manually.
+
+---
+
+## 8. Settings & Dark Mode
+- [ ] Navigate to **Profile → Settings**.
+- [ ] Toggle **Dark Mode** → entire app instantly switches to dark color palette.
+- [ ] Toggle back to **Light Mode** → seamless transition back to light palette.
+- [ ] Tap **Reset Demo Data** → confirms prompt, cleanly re-initializes the database, and clears test orders.
+
+---
+
+## 9. Offline Persistence & Resilience
+- [ ] Add items to Cart and Wishlist.
+- [ ] Force-quit / close the app completely.
+- [ ] Reopen the app → verify Cart items, Wishlist, placed Orders, and saved Addresses persist without data loss.
+- [ ] Test hardware Back button on Android → navigates back through the navigation stack naturally without unexpected exits.

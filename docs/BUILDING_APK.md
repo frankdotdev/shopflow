@@ -1,60 +1,96 @@
-# Building an installable Android APK
+# Building an Installable Android APK
 
-ShopFlow has no backend and no environment secrets, so building it is standard Expo/EAS
-process. There are two paths depending on whether you want a cloud build (no Android Studio
-needed) or a local build.
+I built ShopFlow without external backend dependencies or private secrets, so building a standalone Android APK is straightforward using Expo Application Services (EAS Build) or locally with Gradle.
 
-## Option A — EAS Build (recommended, builds in the cloud)
+Follow these steps to produce an installable `.apk` file.
 
-1. Create a free Expo account at https://expo.dev if you don't have one.
-2. Install the EAS CLI:
-   ```bash
-   npm install -g eas-cli
-   ```
-3. Log in and configure the project (creates `eas.json`):
-   ```bash
-   eas login
-   eas build:configure
-   ```
-4. When prompted for a build profile, choose (or create) a `preview` profile that builds an
-   **APK** rather than an **AAB** (AAB is for Play Store submission; APK is directly
-   installable). In `eas.json`, that looks like:
-   ```json
-   {
-     "build": {
-       "preview": {
-         "android": { "buildType": "apk" }
-       }
-     }
-   }
-   ```
-5. Run the build:
-   ```bash
-   eas build -p android --profile preview
-   ```
-   (this is also wired up as `npm run build:apk`). EAS will queue a cloud build and give you a
-   download link when it finishes — usually 10-20 minutes.
-6. Download the `.apk` from the link (or from your expo.dev dashboard) and install it on an
-   Android device with "Install from unknown sources" enabled, or share the link directly.
+---
 
-## Option B — Local build (requires Android Studio / the Android SDK installed)
+## Method 1: EAS Cloud Build (Recommended)
 
+This is the easiest and recommended method. EAS compiles the app in Expo's cloud builders—you don't need Android Studio or a high-end machine installed locally.
+
+### Step 1: Install EAS CLI
+Make sure you have Node.js installed, then install EAS CLI globally:
+```bash
+npm install -g eas-cli
+```
+
+### Step 2: Log into your Expo account
+If you don't have a free Expo account, create one at [expo.dev](https://expo.dev). Then log in via your terminal:
+```bash
+eas login
+```
+
+### Step 3: Check EAS Configuration
+The repository already includes a pre-configured `eas.json` set up for standalone APK builds:
+```json
+{
+  "cli": {
+    "version": ">= 24.7.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "autoIncrement": true
+    }
+  }
+}
+```
+
+> **Important:** Notice `"buildType": "apk"` under the `preview` profile. By default, Expo builds an `.aab` (Android App Bundle for Google Play). Setting `"buildType": "apk"` ensures you get an installable `.apk` file you can download and run directly on your phone.
+
+### Step 4: Run the Build Command
+Run the build script I've configured in `package.json`:
+```bash
+npm run build:apk
+```
+*(Or run directly: `eas build -p android --profile preview`)*
+
+- When prompted: **"Generate a new Android Keystore?"**, select **Yes** (press Enter).
+- EAS will package your code, upload it to the cloud builder, and give you a live build URL.
+- Once completed (typically 10–15 minutes), EAS will provide a direct download link and a QR code.
+- Open the link on your Android phone, download the `.apk`, allow "Install unknown apps" in your phone settings, and install ShopFlow!
+
+---
+
+## Method 2: Local Build with Android Studio & Gradle
+
+If you have Android Studio, the Android SDK, and Java installed locally, you can build the APK on your own machine:
+
+### 1. Generate the native Android project:
 ```bash
 npx expo prebuild --platform android
+```
+
+### 2. Compile the APK using Gradle:
+```bash
 cd android
 ./gradlew assembleRelease
 ```
+*(On Windows PowerShell: `.gradlew assembleRelease`)*
 
-The output APK will be at `android/app/build/outputs/apk/release/app-release.apk`. This path
-requires a signing key — for a quick unsigned test build use `assembleDebug` instead, which
-outputs to `app/build/outputs/apk/debug/app-debug.apk` and can be installed directly for
-testing (not suitable for distribution).
+The compiled APK will be generated at:
+```
+android/app/build/outputs/apk/release/app-release.apk
+```
 
-## Before you build for real distribution
+If you just want a quick test build without setting up signing keys:
+```bash
+./gradlew assembleDebug
+```
+The debug APK will be at `android/app/build/outputs/apk/debug/app-debug.apk`.
 
-- Replace the placeholder `android.package` in `app.json` (`com.frankoge.shopflow`) if you want
-  a different application ID.
-- Add a real app icon and splash image (`app.json` → `icon`, `splash.image`) — none are bundled
-  in this scaffold, so Expo will use its default placeholder.
-- Read the "Known limitations" section in `README.md` regarding product images before handing
-  the APK to anyone outside your own testing.
+---
+
+## Before Distributing to Real Users
+
+1. **Application ID / Package Name**: If you want your own custom package identifier, update `android.package` in `app.json` (currently set to `com.frankoge.shopflow`).
+2. **App Icon & Splash Screen**: Update `icon` and `splash.image` in `app.json` with your custom high-resolution PNG brand assets.
+3. **Product Images**: Review `docs/DATA_AND_IMAGES.md` to customize product photography or bundle images locally for 100% offline usage.
